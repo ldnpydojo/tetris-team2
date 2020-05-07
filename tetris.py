@@ -2,40 +2,51 @@ import random
 import pgzero
 import colours
 
-LONG_BOI = [[ "xxxx"], ["x", "x", "x", "x"]]
+LONG_BOI = [ "xxxx"]
 
-MR_T = [[ " x ", "xxx"]]
+MR_T = [ "   ", "xxx", " x "]
 
-THE_ROCK = [["xx", "xx"]]
+THE_ROCK = ["xx", "xx"]
 
-SNAKE = [["xx ", " xx"]]
+SNAKE = ["xx ", " xx"]
 
-SNAKE_TOO = [[" xx", "xx "]]
+SNAKE_TOO = [" xx", "xx "]
 
-JAY = [["  x", "xxx"]]
+JAY = ["  x", "xxx"]
 
-SILENT_BOB = [["x  ", "xxx"]]
+SILENT_BOB = ["x  ", "xxx"]
+
+def rotate_90(data):
+    return list(zip(*data))
+
+def rotate_180(data):
+    return [s[::-1] for s in data[::-1]]
+
+def rotations(candidate):
+    yield candidate
+    yield rotate_90(candidate)
+    yield rotate_180(candidate)
+    yield rotate_90(rotate_180(candidate))
+
+def and90(candidate):
+    return [candidate, rotate_90(candidate)]
 
 PIECES = [
-        LONG_BOI,
-        MR_T,
-        THE_ROCK,
-        SNAKE,
-        SNAKE_TOO,
-        JAY,
-        SILENT_BOB]
-
-BOARD = [[' '] * 10 for _ in range(15)]
-BOARD.append(['*'] * 10)
+        list(rotations(MR_T)),
+        [THE_ROCK],
+        and90(LONG_BOI),
+        and90(SNAKE),
+        and90(SNAKE_TOO),
+        and90(JAY),
+        and90(SILENT_BOB)]
 
 
-from pprint import pprint
-pprint(BOARD)
+BOARD = [['*'] + ([' '] * 10) + ['*'] for _ in range(15)]
+BOARD.append(['*'] * 12)
 
 class Piece:
     def __init__(self, data):
         self._data = data
-        pprint(data)
         self.x = 5
         self.y = 0
         self.orientation = 0
@@ -46,9 +57,14 @@ class Piece:
         return self._data[self.orientation]
 
     def rotate(self):
+
+        old_orientation = self.orientation
         self.orientation += 1
         if self.orientation == len(self._data):
             self.orientation = 0
+
+        if self.collides():
+            self.orientation = old_orientation
 
     def right(self):
         return self.x + len(self.data)
@@ -63,10 +79,13 @@ class Piece:
                     yield x + self.x, y + self.y
 
     def collides(self):
-        for x, y in self.tiles():
-            if BOARD[y][x] != ' ':
-                return True
-        return False
+        try:
+            for x, y in self.tiles():
+                if BOARD[y][x] != ' ':
+                    return True
+            return False
+        except:
+            return False
 
 
 def get_piece():
@@ -77,10 +96,15 @@ CURRENT_PIECE = get_piece()
 
 BOARD_WIDTH = 10
 
-def draw():
-    screen.fill((0, 0, 0))
+GAME_STOP = False
 
-    screen.draw.rect(Rect((0, 0), (32 * 10, 32 * 15)), (255, 255, 255))
+def draw():
+
+    if GAME_STOP:
+        screen.fill((255, 0, 0))
+    else:
+        screen.fill((0, 0, 0))
+
 
     piece = CURRENT_PIECE
     for x, y in piece.tiles():
@@ -99,16 +123,14 @@ def draw():
 
 def on_key_down(key):
     if key == keys.LEFT:
-        if CURRENT_PIECE.x:
-            CURRENT_PIECE.x -= 1
-            if CURRENT_PIECE.collides():
-                CURRENT_PIECE.x += 1
+        CURRENT_PIECE.x -= 1
+        if CURRENT_PIECE.collides():
+            CURRENT_PIECE.x += 1
 
     elif key == keys.RIGHT:
-        if CURRENT_PIECE.right() < BOARD_WIDTH:
-            CURRENT_PIECE.x += 1
-            if CURRENT_PIECE.collides():
-                CURRENT_PIECE.x -= 1
+        CURRENT_PIECE.x += 1
+        if CURRENT_PIECE.collides():
+            CURRENT_PIECE.x -= 1
 
     elif key == keys.DOWN:
         ticky()
@@ -124,6 +146,11 @@ def on_key_down(key):
 def ticky():
     global CURRENT_PIECE
     global BOARD
+    global GAME_STOP
+
+    if GAME_STOP:
+        return
+
     CURRENT_PIECE.y += 1
     
     if CURRENT_PIECE.collides():
@@ -144,6 +171,9 @@ def ticky():
             BOARD.insert(0, [' '] * BOARD_WIDTH)
 
         CURRENT_PIECE = get_piece()
+
+        if CURRENT_PIECE.collides():
+           GAME_STOP = True 
 
 
 
