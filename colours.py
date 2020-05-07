@@ -8,7 +8,7 @@ COLOUR_DICT = {"white":  (255,255,255),
                "magenta": (255,0,255),
                "cyan": (0,255,255)}
 
-COLOUR_LIST = list(COLOUR_DICT.keys)
+COLOUR_LIST = list(COLOUR_DICT.keys())
 
 def choose_random_colour():
     return COLOUR_DICT[random.choice(COLOUR_LIST)]
