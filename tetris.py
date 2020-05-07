@@ -168,7 +168,7 @@ def ticky():
         BOARD = [row for y, row in enumerate(BOARD) if y not in completed_rows]
 
         for _ in completed_rows:
-            BOARD.insert(0, [' '] * BOARD_WIDTH)
+            BOARD.insert(0, ['.'] + ([' '] * BOARD_WIDTH) + ['.'])
 
         CURRENT_PIECE = get_piece()
 
