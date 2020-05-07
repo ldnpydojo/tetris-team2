@@ -108,7 +108,8 @@ def draw():
 
     piece = CURRENT_PIECE
     for x, y in piece.tiles():
-            screen.draw.filled_rect(Rect(((x)*32, (y)*32), (32, 32)), piece.colour)
+            screen.draw.filled_rect(Rect(((x)*32, (y)*32), (31, 31)), piece.colour)
+            screen.draw.rect(Rect(((x)*32, (y)*32), (31, 31)), (0,0,0))
 
     for y, row in enumerate(BOARD):
         for x, char in enumerate(row):
@@ -180,3 +181,4 @@ def ticky():
 
 
 clock.schedule_interval(ticky, 0.25)
+
