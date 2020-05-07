@@ -118,6 +118,8 @@ def draw():
                     colour = char
                 screen.draw.filled_rect(Rect((x*32, y*32), (32, 32)), colour)
 
+    if GAME_STOP:
+        screen.blit('gameover.png', (64, 64))
 
 
 
