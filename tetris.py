@@ -1,21 +1,29 @@
 import random
 import pgzero
+import colours
+
+LONG_BOI = [[ "xxxx"], ["x", "x", "x", "x"]]
+
+MR_T = [[ " x ", "xxx"]]
+
+THE_ROCK = [["xx", "xx"]]
+
+SNAKE = [["xx ", " xx"]]
+
+SNAKE_TOO = [[" xx", "xx "]]
+
+JAY = [["  x", "xxx"]]
+
+SILENT_BOB = [["x  ", "xxx"]]
 
 PIECES = [
-        [ "xxxx"],
-        [ " x ", 
-          "xxx" ],
-        [ "xx"
-          "xx" ],
-         ["xx ",
-          " xx"],
-         [" xx",
-          "xx "],
-         ["x  ",
-          "xxx"]
-         ,
-         ["  x",
-          "xxx"]]
+        LONG_BOI,
+        MR_T,
+        THE_ROCK,
+        SNAKE,
+        SNAKE_TOO,
+        JAY,
+        SILENT_BOB]
 
 BOARD = [[' '] * 10 for _ in range(15)]
 BOARD.append(['*'] * 10)
@@ -27,21 +35,29 @@ pprint(BOARD)
 class Piece:
     def __init__(self, data):
         self._data = data
+        pprint(data)
         self.x = 5
         self.y = 0
+        self.orientation = 0
+        self.colour = colours.choose_random_colour()
 
     @property
     def data(self):
-        return self._data
+        return self._data[self.orientation]
+
+    def rotate(self):
+        self.orientation += 1
+        if self.orientation == len(self._data):
+            self.orientation = 0
 
     def right(self):
-        return self.x + len(self._data[0])
+        return self.x + len(self.data)
 
     def bottom(self):
         return self.y + len(self.data)
 
     def tiles(self):
-        for y, line in enumerate(self._data):
+        for y, line in enumerate(self.data):
             for x, char in enumerate(line):
                 if char != ' ':
                     yield x + self.x, y + self.y
@@ -68,12 +84,15 @@ def draw():
 
     piece = CURRENT_PIECE
     for x, y in piece.tiles():
-            screen.draw.filled_rect(Rect(((x)*32, (y)*32), (32, 32)), (255, 255, 255))
+            screen.draw.filled_rect(Rect(((x)*32, (y)*32), (32, 32)), piece.colour)
 
     for y, row in enumerate(BOARD):
         for x, char in enumerate(row):
+            colour = (255, 255, 255)
             if char != ' ':
-                screen.draw.filled_rect(Rect((x*32, y*32), (32, 32)), (255, 255, 255))
+                if isinstance(char, tuple):
+                    colour = char
+                screen.draw.filled_rect(Rect((x*32, y*32), (32, 32)), colour)
 
 
 
@@ -93,6 +112,9 @@ def on_key_down(key):
 
     elif key == keys.DOWN:
         ticky()
+
+    elif key == keys.SPACE:
+        CURRENT_PIECE.rotate()
     
     elif key == keys.UP:
         piece = CURRENT_PIECE
@@ -107,17 +129,19 @@ def ticky():
     if CURRENT_PIECE.collides():
         CURRENT_PIECE.y -= 1
         for x, y in CURRENT_PIECE.tiles():
-            BOARD[y][x] = '*'
+            BOARD[y][x] = CURRENT_PIECE.colour
 
         completed_rows = []
 
-        for y, row in enumerate(BOARD):
+        for y, row in enumerate(BOARD[0:-1]):
             row_complete = not any(char==' ' for char in row)
             if row_complete:
                 completed_rows.append(y)
 
         BOARD = [row for y, row in enumerate(BOARD) if y not in completed_rows]
 
+        for _ in completed_rows:
+            BOARD.insert(0, [' '] * BOARD_WIDTH)
 
         CURRENT_PIECE = get_piece()
 
